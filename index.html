@@ -37,50 +37,18 @@
         <main class="p-6">
 
             <div id="pageDashboard" class="space-y-6">
+                
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
-                    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Penapis / Filters (Keseluruhan)</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Hari</label>
-                            <select id="filterHari" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
-                                <option value="">Semua Hari</option>
-                                <option value="ISNIN">Isnin</option>
-                                <option value="SELASA">Selasa</option>
-                                <option value="RABU">Rabu</option>
-                                <option value="KHAMIS">Khamis</option>
-                                <option value="JUMAAT">Jumaat</option>
-                            </select>
+                    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Penapis Tarikh</h2>
+                    <div class="flex flex-col sm:flex-row items-end gap-4">
+                        <div class="w-full sm:w-64">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Tarikh Ketiadaan</label>
+                            <input type="date" id="filterTarikh" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50 font-medium" onchange="aplikasiFilter()">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Minggu Ke-</label>
-                            <select id="filterMinggu" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
-                                <option value="">Semua Minggu</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
-                            <select id="filterBulan" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
-                                <option value="">Semua Bulan</option>
-                                <option value="01">Januari</option>
-                                <option value="02">Februari</option>
-                                <option value="03">Mac</option>
-                                <option value="04">April</option>
-                                <option value="05">Mei</option>
-                                <option value="06">Jun</option>
-                                <option value="07">Julai</option>
-                                <option value="08">Ogos</option>
-                                <option value="09">September</option>
-                                <option value="10">Oktober</option>
-                                <option value="11">November</option>
-                                <option value="12">Disember</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Tahun</label>
-                            <select id="filterTahun" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
-                                <option value="2026">2026</option>
-                                <option value="2025">2025</option>
-                            </select>
+                            <button onclick="kosongkanFilterTarikh()" class="w-full sm:w-auto px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition cursor-pointer">
+                                🔄 Papar Semua Tarikh
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -175,8 +143,8 @@
     </div>
 
     <script>
-        // MASUKKAN URL WEB APP ANDA DI SINI
-        const API_URL = "https://script.google.com/macros/s/AKfycbzSdlYycCGETy3Qchs351tFxTTvSUoVZuCEQomtkFBMvRq0fMd3ZGi4Ar8kwaJ7zgiPkQ/exec"; // Contoh rujukan sahaja, gantikan dengan yang betul jika perlu.
+        // GANTIKAN URL INI DENGAN URL WEB APP APPS SCRIPT ANDA SEPERTI SEBELUM INI
+        const API_URL = "https://script.google.com/macros/s/AKfycbzSdlYycCGETy3Qchs351tFxTTvSUoVZuCEQomtkFBMvRq0fMd3ZGi4Ar8kwaJ7zgiPkQ/exec"; 
 
         let dataMentah = [];
         let urusanChartInstance = null;
@@ -186,42 +154,15 @@
                 const respon = await fetch(API_URL);
                 dataMentah = await respon.json();
                 
-                binaFilterMinggu();
                 binaDropdownGuru();
                 aplikasiFilter();
             } catch (error) {
                 console.error("Gagal mengambil data:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500 font-semibold">Gagal memuatkan data. Pastikan URL Web App anda betul dan di-deploy sebagai 'Anyone'.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500 font-semibold">Gagal memuatkan data. Sila pastikan URL API betul.</td></tr>`;
             }
         }
 
-        function dapatkanMinggu(tarikhString) {
-            if(!tarikhString) return '';
-            const d = new Date(tarikhString);
-            const satuJan = new Date(d.getFullYear(), 0, 1);
-            const bilanganHari = Math.floor((d - satuJan) / (24 * 60 * 60 * 1000));
-            return Math.ceil((bilanganHari + satuJan.getDay() + 1) / 7);
-        }
-
-        function binaFilterMinggu() {
-            const selectMinggu = document.getElementById('filterMinggu');
-            selectMinggu.innerHTML = '<option value="">Semua Minggu</option>';
-            const senaraiMinggu = new Set();
-            
-            dataMentah.forEach(item => {
-                const m = dapatkanMinggu(item.tarikh);
-                if(m) senaraiMinggu.add(m);
-            });
-
-            Array.from(senaraiMinggu).sort((a,b)=>a-b).forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = `Minggu ${m}`;
-                selectMinggu.appendChild(opt);
-            });
-        }
-
-        // Membina senarai pilihan nama guru pada tab Rekod Guru
+        // Membina senarai dropdown nama guru untuk Tab 2
         function binaDropdownGuru() {
             const selectGuru = document.getElementById('selectGuruIndividu');
             selectGuru.innerHTML = '<option value="">-- Sila Pilih Nama Guru --</option>';
@@ -239,28 +180,24 @@
             });
         }
 
+        // LOGIK UTAMA PENAPIS TARIKH LAMAN UTAMA
         function aplikasiFilter() {
-            const fHari = document.getElementById('filterHari').value;
-            const fMinggu = document.getElementById('filterMinggu').value;
-            const fBulan = document.getElementById('filterBulan').value;
-            const fTahun = document.getElementById('filterTahun').value;
+            const fTarikh = document.getElementById('filterTarikh').value; // Mengambil format YYYY-MM-DD dari input kalendar
 
             const dataDitapis = dataMentah.filter(item => {
-                const tarikh = item.tarikh || ''; 
-                const tahunItem = tarikh.substring(0, 4);
-                const bulanItem = tarikh.substring(5, 7);
-                const mingguItem = dapatkanMinggu(tarikh).toString();
-                const hariItem = (item.hari || '').toUpperCase().trim();
-
-                const padanHari = fHari === "" || hariItem === fHari;
-                const padanMinggu = fMinggu === "" || mingguItem === fMinggu;
-                const padanBulan = fBulan === "" || bulanItem === fBulan;
-                const padanTahun = fTahun === "" || tahunItem === fTahun;
-
-                return padanHari && padanMinggu && padanBulan && padanTahun;
+                const tarikhItem = item.tarikh || '';
+                
+                // Jika input kalendar kosong, benarkan semua data. Jika ada input tarikh, pastikan padan tepat.
+                return fTarikh === "" || tarikhItem === fTarikh;
             });
 
             kemaskiniDashboard(dataDitapis);
+        }
+
+        // Fungsi Kosongkan Tarikh (Reset Button)
+        function kosongkanFilterTarikh() {
+            document.getElementById('filterTarikh').value = "";
+            aplikasiFilter();
         }
 
         function kemaskiniDashboard(data) {
@@ -273,7 +210,7 @@
             tBody.innerHTML = '';
 
             if (data.length === 0) {
-                tBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-400">Tiada rekod dijumpai bagi penapis ini.</td></tr>`;
+                tBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-400">Tiada rekod keberadaan guru dijumpai pada tarikh ini.</td></tr>`;
                 resetChart();
                 document.getElementById('statUrusan').textContent = "-";
                 document.getElementById('statGuru').textContent = "-";
@@ -308,7 +245,7 @@
             binaGrafik(kiraUrusan);
         }
 
-        // Logik Penapis Khas Per Individu Guru (TUGASAN 2)
+        // Logik Penapis Tab 2: Mengikut Individu Guru
         function tapisRekodGuruIndividu() {
             const namaTerpilih = document.getElementById('selectGuruIndividu').value;
             const tBodyGuru = document.getElementById('tableBodyGuru');
@@ -373,7 +310,7 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
-        // Fungsi Penukaran Halaman (Tab Sidebar Switching)
+        // Tukar Tab Halaman
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');
@@ -387,7 +324,7 @@
                 pTitle.textContent = "Sistem Analisis Keberadaan Guru";
                 
                 btnDashboard.className = "w-full text-left block py-2.5 px-4 rounded bg-indigo-800 text-white font-semibold cursor-pointer";
-                btnNavRekod.className = "w-full text-left block py-2.5 px-4 rounded text-indigo-200 hover:bg-indigo-800 hover:text-white transition cursor-pointer";
+                btnRekod.className = "w-full text-left block py-2.5 px-4 rounded text-indigo-200 hover:bg-indigo-800 hover:text-white transition cursor-pointer";
             } else if (page === 'rekod') {
                 pDashboard.classList.add('hidden');
                 pRekod.classList.remove('hidden');

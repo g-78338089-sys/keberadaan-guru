@@ -225,56 +225,44 @@
                 setTarikhHariIni(); 
             } catch (error) {
                 console.error("Ralat pangkalan data:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data. Sila semak Apps Script anda.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data. Sila semak pautan anda.</td></tr>`;
             }
         }
 
-        // FUNGSI TRANSLASI TARIKH (Dicipta khas untuk fleksibiliti format Google Sheet lama & baharu)
-        function formatKeYYYYMMDD(tarikhInput) {
-            if (!tarikhInput) return '';
-            let tStr = tarikhInput.toString().trim();
+        // AMBIL DATA BULAT-BULAT DARI GOOGLE SHEET (Mengekalkan rentas teks asal 100%)
+        function ambilTeksTarikhAsal(item) {
+            let t = item['TARIKH'] || item['TARIKH KETIADAAN'] || item.tarikh || '';
+            let tStr = t.toString().trim();
             
-            // Semakan format standard ISO (YYYY-MM-DD)
+            // Jika Apps Script hantar format ISO (cth: 2026-06-07T00:00:00.000Z), potong terus teks depan sahaja
             if (/^\d{4}-\d{2}-\d{2}/.test(tStr)) {
-                return tStr.substring(0, 10);
+                let bahagian = tStr.substring(0, 10).split('-');
+                // Kembalikan dalam bentuk teks bersih standard tempatan (D/M/YYYY atau DD/MM/YYYY) tanpa pembetulan masa
+                return `${parseInt(bahagian[2])}/${parseInt(bahagian[1])}/${bahagian[0]}`;
             }
-
-            // Pemprosesan format Google Sheets dengan pembahagi serong '/'
+            
+            // Jika sedia ada dalam format pecahan 'X/X/XXXX' (cth: 7/6/2026 atau 07/06/2026)
             if (tStr.includes('/')) {
-                let pecahan = tStr.split(' ')[0].split('/');
-                if (pecahan.length === 3) {
-                    let p1 = pecahan[0];
-                    let p2 = pecahan[1];
-                    let p3 = pecahan[2];
-
-                    if (p1.length === 4) { // YYYY/MM/DD
-                        return `${p1}-${p2.padStart(2, '0')}-${p3.padStart(2, '0')}`;
-                    } else { 
-                        // Menterjemah format DD/MM/YYYY atau MM/DD/YYYY menggunakan sistem browser standard
-                        let d = new Date(tStr);
-                        if (!isNaN(d.getTime())) {
-                            let yyyy = d.getFullYear();
-                            let mm = String(d.getMonth() + 1).padStart(2, '0');
-                            let dd = String(d.getDate()).padStart(2, '0');
-                            return `${yyyy}-${mm}-${dd}`;
-                        }
-                        // Fallback jika pelayar web gagal membaca objek tarikh
-                        return `${p3}-${p2.padStart(2, '0')}-${p1.padStart(2, '0')}`;
-                    }
+                let rawDate = tStr.split(' ')[0]; // Ambil bahagian tarikh sahaja sebelum ruang waktu
+                let pecahan = rawDate.split('/');
+                if(pecahan.length === 3) {
+                    // Pastikan ia dipulangkan dalam impak teks integer bersih d/m/yyyy untuk pemadanan
+                    return `${parseInt(pecahan[0])}/${parseInt(pecahan[1])}/${pecahan[2]}`;
                 }
             }
-            
-            // Cubaan menterjemah teks raw menggunakan sistem timestamp msa
-            let timestamp = Date.parse(tStr);
-            if (!isNaN(timestamp)) {
-                let d = new Date(timestamp);
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            }
+            return tStr;
+        }
 
+        // TUKAR INPUT KALENDAR (YYYY-MM-DD) KEPADA FORMAT TEKS GOOGLE SHEET (D/M/YYYY)
+        function tukarInputKeFormatSheet(inputTarikh) {
+            if(!inputTarikh) return '';
+            let pecahan = inputTarikh.split('-'); // [YYYY, MM, DD]
+            if(pecahan.length === 3) {
+                return `${parseInt(pecahan[2])}/${parseInt(pecham = pecahan[1])}/${pecahan[0]}`;
+            }
             return '';
         }
 
-        // Membina Pilihan Dropdown bagi Triple Filters
         function binaElemenPenapis() {
             const selectGuru = document.getElementById('selectGuruIndividu');
             const selectTahun = document.getElementById('selectTahunIndividu');
@@ -289,10 +277,9 @@
                 const namaBersih = item['NAMA GURU'] || item['Nama Guru'] || item.nama || '';
                 if(namaBersih.trim()) senaraiGuru.add(namaBersih.trim());
 
-                // Menggunakan sandaran kolum TARIKH yang sepadan dengan paparan terkini anda
-                const tarikhFormat = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
-                if(tarikhFormat) {
-                    const tahun = tarikhFormat.split('-')[0];
+                const tarikhTeks = ambilTeksTarikhAsal(item);
+                if(tarikhTeks.includes('/')) {
+                    const tahun = tarikhTeks.split('/')[2];
                     if(tahun) senaraiTahun.add(tahun);
                 }
             });
@@ -322,24 +309,26 @@
             aplikasiFilter();
         }
 
-        // Fungsi Penapis Kalendar Utama (Kini Membaca Lajur 'TARIKH')
+        // PENAPIS UTAMA: Memadankan perbandingan teks secara terus (Direct String Matching)
         function aplikasiFilter() {
-            const fTarikh = document.getElementById('filterTarikh').value;
+            const fTarikhInput = document.getElementById('filterTarikh').value;
             const badge = document.getElementById('badgeHariIni');
 
             const hariIni = new Date();
             const todayStr = `${hariIni.getFullYear()}-${String(hariIni.getMonth() + 1).padStart(2, '0')}-${String(hariIni.getDate()).padStart(2, '0')}`;
             
-            if (fTarikh === todayStr) {
+            if (fTarikhInput === todayStr) {
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
             }
 
+            // Tukar contoh: "2026-06-07" -> "7/6/2026"
+            const sasaranTeksFormat = tukarInputKeFormatSheet(fTarikhInput);
+
             const dataDitapis = dataMentah.filter(item => {
-                // Diperbaiki untuk membaca item['TARIKH'] mengikut penetapan lajur baru sheet anda
-                const tarikhItemClean = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
-                return fTarikh === "" || tarikhItemClean === fTarikh;
+                const tarikhAsalSheet = ambilTeksTarikhAsal(item);
+                return fTarikhInput === "" || tarikhAsalSheet === sasaranTeksFormat;
             });
 
             kemaskiniDashboard(dataDitapis);
@@ -351,7 +340,6 @@
             aplikasiFilter();
         }
 
-        // Pengurusan Render Paparan Data & Grafik Dashboard
         function kemaskiniDashboard(data) {
             document.getElementById('statTotal').textContent = data.length;
             
@@ -375,14 +363,13 @@
                 const guru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
                 
                 const hari = item.hari || item['HARI'] || '';
-                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
+                const tarikhBersih = ambilTeksTarikhAsal(item);
 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
                 kiraGuru[guru] = (kiraGuru[guru] || 0) + 1;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition duration-150";
-                // Reka bentuk ringkas menyatukan Hari & Tarikh serta Urusan & Catatan
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-900">${guru}</td>
                     <td class="px-6 py-4 text-slate-600 font-medium">${hari} (${tarikhBersih})</td>
@@ -403,7 +390,6 @@
             binaGrafik(kiraUrusan);
         }
 
-        // Logik Penapis Bersilang Triple Filters (Nama + Bulan + Tahun)
         function tapisRekodGuruIndividu() {
             const namaTerpilih = document.getElementById('selectGuruIndividu').value;
             const bulanTerpilih = document.getElementById('selectBulanIndividu').value;
@@ -412,7 +398,7 @@
             
             const dataDitapis = dataMentah.filter(item => {
                 const namaItem = (item['NAMA GURU'] || item['Nama Guru'] || item.nama || '').trim();
-                const tarikhItem = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
+                const tarikhTeks = ambilTeksTarikhAsal(item);
                 
                 let padanNama = true;
                 let padanBulan = true;
@@ -420,9 +406,9 @@
 
                 if (namaTerpilih) padanNama = (namaItem === namaTerpilih);
                 
-                if (tarikhItem) {
-                    const [tahun, bulan, hari] = tarikhItem.split('-');
-                    if (bulanTerpilih) padanBulan = (bulan === bulanTerpilih);
+                if (tarikhTeks.includes('/')) {
+                    const [hari, bulan, tahun] = tarikhTeks.split('/');
+                    if (bulanTerpilih) padanBulan = (bulan.padStart(2, '0') === bulanTerpilih);
                     if (tahunTerpilih) padanTahun = (tahun === tahunTerpilih);
                 } else if (bulanTerpilih || tahunTerpilih) {
                     return false;
@@ -446,7 +432,7 @@
                 const catatan = item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-';
                 const namaGuru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
                 const hari = item.hari || item['HARI'] || '';
-                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
+                const tarikhBersih = ambilTeksTarikhAsal(item);
                 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
 
@@ -467,7 +453,6 @@
             document.getElementById('statGuruSebab').textContent = `${urusanTertinggi} (${kiraUrusan[urusanTertinggi]}x)`;
         }
 
-        // Grafik Termaju ChartJS
         function binaGrafik(dataUrusan) {
             const ctx = document.getElementById('urusanChart').getContext('2d');
             if (urusanChartInstance) { urusanChartInstance.destroy(); }
@@ -499,7 +484,7 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
-        // Sistem Navigasi Aplikasi
+        // Navigasi Halaman
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');

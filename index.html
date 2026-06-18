@@ -54,7 +54,7 @@
                     <div class="space-y-1">
                         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Penapis Kalendar</label>
                         <div class="flex items-center gap-2">
-                            <input type="date" id="filterTarikh" class="border border-slate-300 rounded-xl p-2.5 text-sm bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" onchange="aplikasiFilter()">
+                            <input type="date" id="filterTarikh" class="border border-slate-300 rounded-xl p-2.5 text-sm bg-slate-50 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition" oninput="aplikasiFilter()">
                             <span id="badgeHariIni" class="text-xs bg-indigo-50 text-indigo-700 font-medium px-2 py-1 rounded border border-indigo-100 hidden">Hari Ini</span>
                         </div>
                     </div>
@@ -95,8 +95,8 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm lg:col-span-1 flex flex-col justify-between">
                         <div>
-                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Pecahan Urusan ketiadaan</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Representasi visual kategori alasan/tujuan rasmi.</p>
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Pecahan Urusan Ketiadaan</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Kategori alasan/tujuan rasmi.</p>
                         </div>
                         <div class="relative h-60 my-6 flex items-center justify-center">
                             <canvas id="urusanChart"></canvas>
@@ -105,22 +105,20 @@
                     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm lg:col-span-2 flex flex-col overflow-hidden">
                         <div class="p-6 border-b border-slate-100">
                             <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Log Keberadaan Guru</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Senarai kronologi maklumat yang ditarik secara langsung.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Senarai guru tidak hadir pada tarikh yang dipilih.</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto text-sm text-left">
                                 <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
                                     <tr>
                                         <th class="px-6 py-4">Nama Guru</th>
-                                        <th class="px-6 py-4">Hari</th>
-                                        <th class="px-6 py-4">Tarikh</th>
-                                        <th class="px-6 py-4">Urusan</th>
-                                        <th class="px-6 py-4">Catatan</th>
+                                        <th class="px-6 py-4">Hari & Tarikh</th>
+                                        <th class="px-6 py-4">Urusan / Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableBody" class="divide-y divide-slate-100 text-slate-700">
                                     <tr>
-                                        <td colspan="5" class="text-center py-12 text-slate-400 font-medium">Sedang memuatkan pangkalan data...</td>
+                                        <td colspan="3" class="text-center py-12 text-slate-400 font-medium">Sedang memuatkan pangkalan data...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -130,11 +128,10 @@
             </div>
 
             <div id="pageRekodGuru" class="space-y-6 hidden">
-                
                 <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Pusat Tapisan Rekod Ketiadaan</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Kombinasikan pembolehubah nama, bulan, dan tahun untuk carian granular.</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Kombinasikan pembolehubah nama, bulan, dan tahun.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -190,22 +187,19 @@
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col overflow-hidden">
                     <div class="p-6 border-b border-slate-100">
                         <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Penyata Rekod Guru Terperinci</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Menunjukkan senarai sepadan berasaskan tetapan 3 kriteria di atas.</p>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full table-auto text-sm text-left">
                             <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
                                 <tr>
                                     <th class="px-6 py-4">Nama Guru</th>
-                                    <th class="px-6 py-4">Hari</th>
-                                    <th class="px-6 py-4">Tarikh</th>
-                                    <th class="px-6 py-4">Urusan</th>
-                                    <th class="px-6 py-4">Catatan</th>
+                                    <th class="px-6 py-4">Hari & Tarikh</th>
+                                    <th class="px-6 py-4">Urusan / Catatan</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBodyGuru" class="divide-y divide-slate-100 text-slate-700">
                                 <tr>
-                                    <td colspan="5" class="text-center py-12 text-slate-400 font-medium">Sila gunakan penapis di atas untuk menjana keputusan.</td>
+                                    <td colspan="3" class="text-center py-12 text-slate-400 font-medium">Sila gunakan penapis di atas untuk menjana keputusan.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -222,42 +216,67 @@
         let dataMentah = [];
         let urusanChartInstance = null;
 
-        // Struktur permulaan utama
         async function ambilData() {
             try {
                 const respon = await fetch(API_URL);
                 dataMentah = await respon.json();
                 
                 binaElemenPenapis();
-                setTarikhHariIni(); // Terus tetapkan tarikh hari ini secara automatik
+                setTarikhHariIni(); 
             } catch (error) {
                 console.error("Ralat pangkalan data:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data. Sila sahkan integriti Web API Apps Script anda.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data.</td></tr>`;
             }
         }
 
-        // Pengurus Tarikh Kalendar Tegas (Menghalang isu perbezaan format zon masa / fail US-text)
+        // FUNGSI PENUKARAN TARIKH YANG DIBETULKAN (Lebih Kebal Isu Fail Format Berbeza)
         function formatKeYYYYMMDD(tarikhInput) {
             if (!tarikhInput) return '';
             let tStr = tarikhInput.toString().trim();
             
-            if (tStr.includes('-')) {
+            // Jika dah sedia ada format YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}/.test(tStr)) {
                 return tStr.substring(0, 10);
             }
-            
+
+            // Jika format seperti Google Form lama/baru (cth: 6/10/2026 atau 12/06/2026)
             if (tStr.includes('/')) {
-                let pecahan = tStr.split('/');
+                let pecahan = tStr.split(' ')[0].split('/');
                 if (pecahan.length === 3) {
-                    let bulan = pecahan[0].padStart(2, '0');
-                    let hari = pecahan[1].padStart(2, '0');
-                    let tahun = pecahan[2];
-                    return `${tahun}-${bulan}-${hari}`;
+                    // Kenalpasti jika pecahan pertama ialah tahun atau hari/bulan
+                    let p1 = pecahan[0];
+                    let p2 = pecahan[1];
+                    let p3 = pecahan[2];
+
+                    if (p1.length === 4) { // YYYY/MM/DD
+                        return `${p1}-${p2.padStart(2, '0')}-${p3.padStart(2, '0')}`;
+                    } else { 
+                        // Kebanyakan Google Form format MY/UK (DD/MM/YYYY) atau US (MM/DD/YYYY)
+                        // Kita cuba buat andaian parsing yang selamat menggunakan objek Date bawaan browser
+                        let d = new Date(tStr);
+                        if (!isNaN(d.getTime())) {
+                            let yyyy = d.getFullYear();
+                            let mm = String(d.getMonth() + 1).padStart(2, '0');
+                            let dd = String(d.getDate()).padStart(2, '0');
+                            return `${yyyy}-${mm}-${dd}`;
+                        }
+                        
+                        // Fallback manual sekiranya tersangkut: anggap sebagai DD-MM-YYYY
+                        return `${p3}-${p2.padStart(2, '0')}-${p1.padStart(2, '0')}`;
+                    }
                 }
             }
-            return tStr;
+            
+            // Cubaan terakhir menggunakan Date parse standard
+            let timestamp = Date.parse(tStr);
+            if (!isNaN(timestamp)) {
+                let d = new Date(timestamp);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+
+            return '';
         }
 
-        // Membina Pilihan untuk Komponen Dropdown Termaju
         function binaElemenPenapis() {
             const selectGuru = document.getElementById('selectGuruIndividu');
             const selectTahun = document.getElementById('selectTahunIndividu');
@@ -269,18 +288,16 @@
             const senaraiTahun = new Set();
             
             dataMentah.forEach(item => {
-                // Selesaikan isu pengepala lajur "TIADA NAMA" dengan semakan sandaran komprehensif
-                const namaBersih = item['NAMA GURU'] || item['Nama Guru'] || item['nama'] || '';
+                const namaBersih = item['NAMA GURU'] || item['Nama Guru'] || item.nama || '';
                 if(namaBersih.trim()) senaraiGuru.add(namaBersih.trim());
 
-                const tarikhFormat = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                const tarikhFormat = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN'] || item['Timestamp']);
                 if(tarikhFormat) {
                     const tahun = tarikhFormat.split('-')[0];
                     if(tahun) senaraiTahun.add(tahun);
                 }
             });
 
-            // Isikan Dropdown Guru
             Array.from(senaraiGuru).sort().forEach(nama => {
                 const opt = document.createElement('option');
                 opt.value = nama;
@@ -288,7 +305,6 @@
                 selectGuru.appendChild(opt);
             });
 
-            // Isikan Dropdown Tahun
             Array.from(senaraiTahun).sort((a,b) => b - a).forEach(tahun => {
                 const opt = document.createElement('option');
                 opt.value = tahun;
@@ -297,25 +313,20 @@
             });
         }
 
-        // MENETAPKAN TARIKH AUTOMATIK HARI INI (Permintaan 1)
         function setTarikhHariIni() {
             const hariIni = new Date();
             const yyyy = hariIni.getFullYear();
             const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
             const dd = String(hariIni.getDate()).padStart(2, '0');
             
-            const hariIniStr = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('filterTarikh').value = hariIniStr;
-            document.getElementById('badgeHariIni').classList.remove('hidden');
+            document.getElementById('filterTarikh').value = `${yyyy}-${mm}-${dd}`;
             aplikasiFilter();
         }
 
-        // Tapis Data Laman Utama
         function aplikasiFilter() {
             const fTarikh = document.getElementById('filterTarikh').value;
             const badge = document.getElementById('badgeHariIni');
 
-            // Kawalan paparan badge hari ini
             const hariIni = new Date();
             const todayStr = `${hariIni.getFullYear()}-${String(hariIni.getMonth() + 1).padStart(2, '0')}-${String(hariIni.getDate()).padStart(2, '0')}`;
             
@@ -339,7 +350,6 @@
             aplikasiFilter();
         }
 
-        // Pengurusan Render Paparan Dashboard Utama
         function kemaskiniDashboard(data) {
             document.getElementById('statTotal').textContent = data.length;
             
@@ -350,7 +360,7 @@
             tBody.innerHTML = '';
 
             if (data.length === 0) {
-                tBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada rekod data ketiadaan dikesan untuk tarikh/penapis ini.</td></tr>`;
+                tBody.innerHTML = `<tr><td colspan="3" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada rekod dikesan untuk tarikh ini.</td></tr>`;
                 resetChart();
                 document.getElementById('statUrusan').textContent = "Tiada Data";
                 document.getElementById('statGuru').textContent = "Tiada Data";
@@ -359,7 +369,10 @@
 
             data.forEach(item => {
                 const urusan = item.urusan || item['URUSAN'] || 'LAIN-LAIN';
+                const catatan = item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-';
                 const guru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
+                
+                const hari = item.hari || item['HARI'] || '';
                 const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
@@ -367,12 +380,14 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition duration-150";
+                // REKABENTUK RINGKAS: Menggabungkan Hari & Tarikh, serta Urusan & Catatan
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-900">${guru}</td>
-                    <td class="px-6 py-4 text-slate-600">${item.hari || item['HARI'] || '-'}</td>
-                    <td class="px-6 py-4 text-slate-600">${tarikhBersih || '-'}</td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">${urusan}</span></td>
-                    <td class="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">${item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-'}</td>
+                    <td class="px-6 py-4 text-slate-600 font-medium">${hari} (${tarikhBersih})</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 mb-1 block w-max">${urusan}</span>
+                        <span class="text-xs text-slate-500 block">${catatan}</span>
+                    </td>
                 `;
                 tBody.appendChild(tr);
             });
@@ -386,14 +401,12 @@
             binaGrafik(kiraUrusan);
         }
 
-        // LOGIK UTAMA TRIPLE PENAPIS INTEGRASI (Permintaan 3)
         function tapisRekodGuruIndividu() {
             const namaTerpilih = document.getElementById('selectGuruIndividu').value;
             const bulanTerpilih = document.getElementById('selectBulanIndividu').value;
             const tahunTerpilih = document.getElementById('selectTahunIndividu').value;
             const tBodyGuru = document.getElementById('tableBodyGuru');
             
-            // Pengguna boleh melihat kombinasi semua guru, atau mengikut spesifikasi khusus
             const dataDitapis = dataMentah.filter(item => {
                 const namaItem = (item['NAMA GURU'] || item['Nama Guru'] || item.nama || '').trim();
                 const tarikhItem = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
@@ -409,7 +422,6 @@
                     if (bulanTerpilih) padanBulan = (bulan === bulanTerpilih);
                     if (tahunTerpilih) padanTahun = (tahun === tahunTerpilih);
                 } else if (bulanTerpilih || tahunTerpilih) {
-                    // Jika data tiada tarikh sah tapi pengguna menapis bulan/tahun
                     return false;
                 }
 
@@ -421,25 +433,29 @@
             let kiraUrusan = {};
 
             if(dataDitapis.length === 0) {
-                tBodyGuru.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada padanan kombinasi rekod ditemui.</td></tr>`;
+                tBodyGuru.innerHTML = `<tr><td colspan="3" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada padanan kombinasi rekod ditemui.</td></tr>`;
                 document.getElementById('statGuruSebab').textContent = "-";
                 return;
             }
 
             dataDitapis.forEach(item => {
                 const urusan = item.urusan || item['URUSAN'] || 'LAIN-LAIN';
+                const catatan = item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-';
                 const namaGuru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
-                kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
+                const hari = item.hari || item['HARI'] || '';
                 const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                
+                kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition duration-150";
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-900">${namaGuru}</td>
-                    <td class="px-6 py-4 text-slate-600">${item.hari || item['HARI'] || '-'}</td>
-                    <td class="px-6 py-4 text-slate-600">${tarikhBersih || '-'}</td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">${urusan}</span></td>
-                    <td class="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">${item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-'}</td>
+                    <td class="px-6 py-4 text-slate-600 font-medium">${hari} (${tarikhBersih})</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 mb-1 block w-max">${urusan}</span>
+                        <span class="text-xs text-slate-500 block">${catatan}</span>
+                    </td>
                 `;
                 tBodyGuru.appendChild(tr);
             });
@@ -448,7 +464,6 @@
             document.getElementById('statGuruSebab').textContent = `${urusanTertinggi} (${kiraUrusan[urusanTertinggi]}x)`;
         }
 
-        // Pembina Grafik ChartJS Eksekutif
         function binaGrafik(dataUrusan) {
             const ctx = document.getElementById('urusanChart').getContext('2d');
             if (urusanChartInstance) { urusanChartInstance.destroy(); }
@@ -480,7 +495,6 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
-        // Struktur Navigasi Berprestasi Tinggi
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');

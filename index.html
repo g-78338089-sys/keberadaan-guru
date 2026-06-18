@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Analisis Keberadaan Guru</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans flex h-screen overflow-hidden">
+
+    <div class="w-64 bg-indigo-900 text-white flex flex-col justify-between hidden md:flex">
+        <div>
+            <div class="p-5 text-xl font-bold tracking-wider border-b border-indigo-800">
+                ADMIN LESTARI
+            </div>
+            <nav class="mt-5 px-4 space-y-2">
+                <a href="#" class="block py-2.5 px-4 rounded bg-indigo-800 text-white font-semibold">
+                    📊 Dashboard Analisis
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded text-indigo-200 hover:bg-indigo-800 hover:text-white transition">
+                    📋 Rekod Guru
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-indigo-800 text-sm text-indigo-300 text-center">
+            SMK Ampang Pecah © 2026
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">Sistem Analisis Keberadaan Guru</h1>
+            <span class="text-sm bg-green-100 text-green-800 font-semibold px-3 py-1 rounded-full">Sistem Aktif</span>
+        </header>
+
+        <main class="p-6 space-y-6">
+
+            <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Penapis / Filters</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Hari</label>
+                        <select id="filterHari" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
+                            <option value="">Semua Hari</option>
+                            <option value="ISNIN">Isnin</option>
+                            <option value="SELASA">Selasa</option>
+                            <option value="RABU">Rabu</option>
+                            <option value="KHAMIS">Khamis</option>
+                            <option value="JUMAAT">Jumaat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Minggu Ke- (Berdasarkan Tarikh)</label>
+                        <select id="filterMinggu" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
+                            <option value="">Semua Minggu</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
+                        <select id="filterBulan" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
+                            <option value="">Semua Bulan</option>
+                            <option value="01">Januari</option>
+                            <option value="02">Februari</option>
+                            <option value="03">Mac</option>
+                            <option value="04">April</option>
+                            <option value="05">Mei</option>
+                            <option value="06">Jun</option>
+                            <option value="07">Khamis</option>
+                            <option value="08">Ogos</option>
+                            <option value="09">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Disember</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Tahun</label>
+                        <select id="filterTahun" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50" onchange="aplikasiFilter()">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
+                    <span class="text-sm font-semibold text-gray-400 uppercase">Jumlah Urusan Terdaftar</span>
+                    <span id="statTotal" class="text-3xl font-bold text-gray-800 mt-2">0</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
+                    <span class="text-sm font-semibold text-gray-400 uppercase">Urusan Tertinggi</span>
+                    <span id="statUrusan" class="text-xl font-bold text-indigo-600 mt-2">-</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200 flex flex-col justify-between">
+                    <span class="text-sm font-semibold text-gray-400 uppercase">Guru Paling Kerap Memohon</span>
+                    <span id="statGuru" class="text-xl font-bold text-green-600 mt-2">-</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200 lg:col-span-1">
+                    <h3 class="text-md font-bold text-gray-700 mb-4">Pecahan Urusan</h3>
+                    <div class="relative h-64">
+                        <canvas id="urusanChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200 lg:col-span-2 overflow-x-auto">
+                    <h3 class="text-md font-bold text-gray-700 mb-4">Senarai Rekod Keberadaan</h3>
+                    <table class="min-w-full table-auto text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
+                            <tr>
+                                <th class="px-4 py-3">Nama Guru</th>
+                                <th class="px-4 py-3">Hari</th>
+                                <th class="px-4 py-3">Tarikh</th>
+                                <th class="px-4 py-3">Urusan</th>
+                                <th class="px-4 py-3">Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-200 text-gray-700">
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-400">Sedang memuatkan data dari Google Sheets...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // GANTIKAN URL INI DENGAN URL WEB APP DEPLOYMENT ANDA DARI APPS SCRIPT
+        const API_URL = "https://script.google.com/macros/s/AKfycbzSdlYycCGETy3Qchs351tFxTTvSUoVZuCEQomtkFBMvRq0fMd3ZGi4Ar8kwaJ7zgiPkQ/exec";
+
+        let dataMentah = [];
+        let urusanChartInstance = null;
+
+        // Fungsi Load Data Pertama Kali
+        async function ambilData() {
+            try {
+                const respon = await fetch(API_URL);
+                dataMentah = await respon.json();
+                
+                binaFilterMinggu();
+                aplikasiFilter();
+            } catch (error) {
+                console.error("Gagal mengambil data:", error);
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500 font-semibold">Gagal memuatkan data. Sila pastikan URL API betul dan CORS diizinkan.</td></tr>`;
+            }
+        }
+
+        // Helper untuk dapatkan nombor minggu dari tarikh string (YYYY-MM-DD)
+        function dapatkanMinggu(tarikhString) {
+            if(!tarikhString) return '';
+            const d = new Date(tarikhString);
+            const satuJan = new Date(d.getFullYear(), 0, 1);
+            const bilanganHari = Math.floor((d - satuJan) / (24 * 60 * 60 * 1000));
+            return Math.ceil((bilanganHari + satuJan.getDay() + 1) / 7);
+        }
+
+        // Bina pilihan filter minggu secara dinamik
+        function binaFilterMinggu() {
+            const selectMinggu = document.getElementById('filterMinggu');
+            const senaraiMinggu = new Set();
+            
+            dataMentah.forEach(item => {
+                const m = dapatkanMinggu(item['TARIKH']);
+                if(m) senaraiMinggu.add(m);
+            });
+
+            Array.from(senaraiMinggu).sort((a,b)=>a-b).forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = `Minggu ${m}`;
+                selectMinggu.appendChild(opt);
+            });
+        }
+
+        // Fungsi Utama untuk Memproses Filter & Mengemaskini UI
+        function aplikasiFilter() {
+            const fHari = document.getElementById('filterHari').value;
+            const fMinggu = document.getElementById('filterMinggu').value;
+            const fBulan = document.getElementById('filterBulan').value;
+            const fTahun = document.getElementById('filterTahun').value;
+
+            // Proses Tapis Data
+            const dataDitapis = dataMentah.filter(item => {
+                const tarikh = item['TARIKH'] || ''; // Format YYYY-MM-DD
+                const tahunItem = tarikh.substring(0, 4);
+                const bulanItem = tarikh.substring(5, 7);
+                const mingguItem = dapatkanMinggu(tarikh).toString();
+                const hariItem = (item['HARI'] || '').toUpperCase().trim();
+
+                const padanHari = fHari === "" || hariItem === fHari;
+                const padanMinggu = fMinggu === "" || mingguItem === fMinggu;
+                const padanBulan = fBulan === "" || bulanItem === fBulan;
+                const padanTahun = fTahun === "" || tahunItem === fTahun;
+
+                return padanHari && padanMinggu && padanBulan && padanTahun;
+            });
+
+            kemaskiniDashboard(dataDitapis);
+        }
+
+        // Kemaskini Jadual, Kad Statistik dan Grafik
+        function kemaskiniDashboard(data) {
+            // 1. Kemaskini Kad Stat
+            document.getElementById('statTotal').textContent = data.length;
+            
+            let kiraUrusan = {};
+            let kiraGuru = {};
+
+            const tBody = document.getElementById('tableBody');
+            tBody.innerHTML = '';
+
+            if (data.length === 0) {
+                tBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-400">Tiada rekod dijumpai bagi penapis ini.</td></tr>`;
+                resetChart();
+                document.getElementById('statUrusan').textContent = "-";
+                document.getElementById('statGuru').textContent = "-";
+                return;
+            }
+
+            // 2. Isi Jadual & Kira Kekerapan
+            data.forEach(item => {
+                const urusan = item['URUSAN'] || 'LAIN-LAIN';
+                const guru = item['NAMA GURU'] || 'TIADA NAMA';
+
+                kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
+                kiraGuru[guru] = (kiraGuru[guru] || 0) + 1;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-gray-900">${guru}</td>
+                    <td class="px-4 py-3">${item['HARI'] || '-'}</td>
+                    <td class="px-4 py-3">${item['TARIKH'] || '-'}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-100 text-indigo-800">${urusan}</span></td>
+                    <td class="px-4 py-3 text-xs text-gray-500">${item['CATATAN (JIKA ADA)'] || '-'}</td>
+                `;
+                tBody.appendChild(tr);
+            });
+
+            // Cari Urusan Tertinggi & Guru Paling Kerap
+            const urusanTertinggi = Object.keys(kiraUrusan).reduce((a, b) => kiraUrusan[a] > kiraUrusan[b] ? a : b, '-');
+            const guruTertinggi = Object.keys(kiraGuru).reduce((a, b) => kiraGuru[a] > kiraGuru[b] ? a : b, '-');
+
+            document.getElementById('statUrusan').textContent = `${urusanTertinggi} (${kiraUrusan[urusanTertinggi]}x)`;
+            document.getElementById('statGuru').textContent = `${guruTertinggi} (${kiraGuru[guruTertinggi]}x)`;
+
+            // 3. Kemaskini Grafik (Chart.js)
+            binaGrafik(kiraUrusan);
+        }
+
+        function binaGrafik(dataUrusan) {
+            const ctx = document.getElementById('urusanChart').getContext('2d');
+            
+            if (urusanChartInstance) {
+                urusanChartInstance.destroy();
+            }
+
+            urusanChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataUrusan),
+                    datasets: [{
+                        data: Object.values(dataUrusan),
+                        backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function resetChart() {
+            if (urusanChartInstance) {
+                urusanChartInstance.destroy();
+            }
+        }
+
+        // Jalankan fungsi fetch data sebaik sahaja halaman dibuka
+        window.onload = ambilData;
+    </script>
+</body>
+</html>

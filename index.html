@@ -143,7 +143,7 @@
     </div>
 
     <script>
-        // GANTIKAN URL INI DENGAN URL WEB APP APPS SCRIPT ANDA SEPERTI SEBELUM INI
+        // MASUKKAN URL API APPS SCRIPT KAU KAT SINI
         const API_URL = "https://script.google.com/macros/s/AKfycbzSdlYycCGETy3Qchs351tFxTTvSUoVZuCEQomtkFBMvRq0fMd3ZGi4Ar8kwaJ7zgiPkQ/exec"; 
 
         let dataMentah = [];
@@ -162,7 +162,29 @@
             }
         }
 
-        // Membina senarai dropdown nama guru untuk Tab 2
+        // Fungsi bantuan untuk menukar apa-apa jenis string tarikh dari Sheet kepada format bersih YYYY-MM-DD
+        function formatKeYYYYMMDD(tarikhInput) {
+            if (!tarikhInput) return '';
+            let tStr = tarikhInput.toString().trim();
+            
+            // Format ISO contoh: "2026-01-11T16:00:00.000Z" atau "2026-01-12"
+            if (tStr.includes('-')) {
+                return tStr.substring(0, 10);
+            }
+            
+            // Format Teks US contoh: "1/12/2026" (M/D/YYYY)
+            if (tStr.includes('/')) {
+                let pecahan = tStr.split('/');
+                if (pecahan.length === 3) {
+                    let bulan = pecahan[0].padStart(2, '0');
+                    let hari = pecahan[1].padStart(2, '0');
+                    let tahun = pecahan[2];
+                    return `${tahun}-${bulan}-${hari}`;
+                }
+            }
+            return tStr;
+        }
+
         function binaDropdownGuru() {
             const selectGuru = document.getElementById('selectGuruIndividu');
             selectGuru.innerHTML = '<option value="">-- Sila Pilih Nama Guru --</option>';
@@ -180,21 +202,17 @@
             });
         }
 
-        // LOGIK UTAMA PENAPIS TARIKH LAMAN UTAMA
         function aplikasiFilter() {
-            const fTarikh = document.getElementById('filterTarikh').value; // Mengambil format YYYY-MM-DD dari input kalendar
+            const fTarikh = document.getElementById('filterTarikh').value; // Pulangkan format "YYYY-MM-DD"
 
             const dataDitapis = dataMentah.filter(item => {
-                const tarikhItem = item.tarikh || '';
-                
-                // Jika input kalendar kosong, benarkan semua data. Jika ada input tarikh, pastikan padan tepat.
-                return fTarikh === "" || tarikhItem === fTarikh;
+                const tarikhItemClean = formatKeYYYYMMDD(item.tarikh);
+                return fTarikh === "" || tarikhItemClean === fTarikh;
             });
 
             kemaskiniDashboard(dataDitapis);
         }
 
-        // Fungsi Kosongkan Tarikh (Reset Button)
         function kosongkanFilterTarikh() {
             document.getElementById('filterTarikh').value = "";
             aplikasiFilter();
@@ -220,6 +238,7 @@
             data.forEach(item => {
                 const urusan = item.urusan || 'LAIN-LAIN';
                 const guru = item.nama || 'TIADA NAMA';
+                const tarikhBersih = formatKeYYYYMMDD(item.tarikh);
 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
                 kiraGuru[guru] = (kiraGuru[guru] || 0) + 1;
@@ -229,7 +248,7 @@
                 tr.innerHTML = `
                     <td class="px-4 py-3 font-semibold text-gray-900">${guru}</td>
                     <td class="px-4 py-3">${item.hari || '-'}</td>
-                    <td class="px-4 py-3">${item.tarikh || '-'}</td>
+                    <td class="px-4 py-3">${tarikhBersih || '-'}</td>
                     <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-100 text-indigo-800">${urusan}</span></td>
                     <td class="px-4 py-3 text-xs text-gray-500">${item.catatan || '-'}</td>
                 `;
@@ -245,7 +264,6 @@
             binaGrafik(kiraUrusan);
         }
 
-        // Logik Penapis Tab 2: Mengikut Individu Guru
         function tapisRekodGuruIndividu() {
             const namaTerpilih = document.getElementById('selectGuruIndividu').value;
             const tBodyGuru = document.getElementById('tableBodyGuru');
@@ -271,12 +289,13 @@
 
             dataGuru.forEach(item => {
                 kiraUrusan[item.urusan] = (kiraUrusan[item.urusan] || 0) + 1;
+                const tarikhBersih = formatKeYYYYMMDD(item.tarikh);
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
                     <td class="px-4 py-3">${item.hari || '-'}</td>
-                    <td class="px-4 py-3">${item.tarikh || '-'}</td>
+                    <td class="px-4 py-3">${tarikhBersih || '-'}</td>
                     <td class="px-4 py-3"><span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-100 text-indigo-800">${item.urusan}</span></td>
                     <td class="px-4 py-3 text-xs text-gray-500">${item.catatan || '-'}</td>
                 `;
@@ -310,7 +329,6 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
-        // Tukar Tab Halaman
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');
@@ -322,14 +340,12 @@
                 pDashboard.classList.remove('hidden');
                 pRekod.classList.add('hidden');
                 pTitle.textContent = "Sistem Analisis Keberadaan Guru";
-                
                 btnDashboard.className = "w-full text-left block py-2.5 px-4 rounded bg-indigo-800 text-white font-semibold cursor-pointer";
                 btnRekod.className = "w-full text-left block py-2.5 px-4 rounded text-indigo-200 hover:bg-indigo-800 hover:text-white transition cursor-pointer";
             } else if (page === 'rekod') {
                 pDashboard.classList.add('hidden');
                 pRekod.classList.remove('hidden');
                 pTitle.textContent = "Rekod Keberadaan Mengikut Guru";
-                
                 btnDashboard.className = "w-full text-left block py-2.5 px-4 rounded text-indigo-200 hover:bg-indigo-800 hover:text-white transition cursor-pointer";
                 btnRekod.className = "w-full text-left block py-2.5 px-4 rounded bg-indigo-800 text-white font-semibold cursor-pointer";
             }

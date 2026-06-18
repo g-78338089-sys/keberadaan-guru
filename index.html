@@ -229,36 +229,34 @@
             }
         }
 
-        // AMBIL DATA BULAT-BULAT DARI GOOGLE SHEET (Mengekalkan rentas teks asal 100%)
+        // AMBIL TEKS TARIKH MENTAH (Kebal daripada sebarang isu zon masa)
         function ambilTeksTarikhAsal(item) {
             let t = item['TARIKH'] || item['TARIKH KETIADAAN'] || item.tarikh || '';
             let tStr = t.toString().trim();
             
-            // Jika Apps Script hantar format ISO (cth: 2026-06-07T00:00:00.000Z), potong terus teks depan sahaja
+            // Jika format string ISO panjang (Cth: 2026-06-15T16:00:00.000Z)
             if (/^\d{4}-\d{2}-\d{2}/.test(tStr)) {
-                let bahagian = tStr.substring(0, 10).split('-');
-                // Kembalikan dalam bentuk teks bersih standard tempatan (D/M/YYYY atau DD/MM/YYYY) tanpa pembetulan masa
-                return `${parseInt(bahagian[2])}/${parseInt(bahagian[1])}/${bahagian[0]}`;
+                let bahagian = tStr.substring(0, 10).split('-'); // Ambil YYYY-MM-DD
+                return `${parseInt(bahagian[2])}/${parseInt(bahagian[1])}/${bahagian[0]}`; // Tukar jadi D/M/YYYY
             }
             
-            // Jika sedia ada dalam format pecahan 'X/X/XXXX' (cth: 7/6/2026 atau 07/06/2026)
+            // Jika format string serong pendek (Cth: 15/6/2026)
             if (tStr.includes('/')) {
-                let rawDate = tStr.split(' ')[0]; // Ambil bahagian tarikh sahaja sebelum ruang waktu
+                let rawDate = tStr.split(' ')[0]; 
                 let pecahan = rawDate.split('/');
                 if(pecahan.length === 3) {
-                    // Pastikan ia dipulangkan dalam impak teks integer bersih d/m/yyyy untuk pemadanan
-                    return `${parseInt(pecahan[0])}/${parseInt(pecahan[1])}/${pecahan[2]}`;
+                    return `${parseInt(pecahan[0])}/${parseInt(pecahan[1])}/${pecahan[2]}`; // Pastikan format D/M/YYYY bersih
                 }
             }
             return tStr;
         }
 
-        // TUKAR INPUT KALENDAR (YYYY-MM-DD) KEPADA FORMAT TEKS GOOGLE SHEET (D/M/YYYY)
+        // FORMAT KAN INPUT DATE DARI KALENDAR HTML KEPADA D/M/YYYY SECARA RAW
         function tukarInputKeFormatSheet(inputTarikh) {
             if(!inputTarikh) return '';
             let pecahan = inputTarikh.split('-'); // [YYYY, MM, DD]
             if(pecahan.length === 3) {
-                return `${parseInt(pecahan[2])}/${parseInt(pecham = pecahan[1])}/${pecahan[0]}`;
+                return `${parseInt(pecahan[2])}/${parseInt(pecahan[1])}/${pecVendor = pecahan[0]}`;
             }
             return '';
         }
@@ -309,7 +307,6 @@
             aplikasiFilter();
         }
 
-        // PENAPIS UTAMA: Memadankan perbandingan teks secara terus (Direct String Matching)
         function aplikasiFilter() {
             const fTarikhInput = document.getElementById('filterTarikh').value;
             const badge = document.getElementById('badgeHariIni');
@@ -323,8 +320,12 @@
                 badge.classList.add('hidden');
             }
 
-            // Tukar contoh: "2026-06-07" -> "7/6/2026"
-            const sasaranTeksFormat = tukarInputKeFormatSheet(fTarikhInput);
+            // Contoh tukar kalendar HTML: "2026-06-15" -> "15/6/2026"
+            let sasaranTeksFormat = '';
+            if(fTarikhInput) {
+                let p = fTarikhInput.split('-');
+                sasaranTeksFormat = `${parseInt(p[2])}/${parseInt(p[1])}/${p[0]}`;
+            }
 
             const dataDitapis = dataMentah.filter(item => {
                 const tarikhAsalSheet = ambilTeksTarikhAsal(item);
@@ -484,7 +485,6 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
-        // Navigasi Halaman
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');

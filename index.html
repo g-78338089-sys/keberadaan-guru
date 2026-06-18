@@ -225,25 +225,24 @@
                 setTarikhHariIni(); 
             } catch (error) {
                 console.error("Ralat pangkalan data:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="3" class="text-center py-12 text-rose-500 font-semibold">Ralat pemuatan data. Sila semak Apps Script anda.</td></tr>`;
             }
         }
 
-        // FUNGSI PENUKARAN TARIKH YANG DIBETULKAN (Lebih Kebal Isu Fail Format Berbeza)
+        // FUNGSI TRANSLASI TARIKH (Dicipta khas untuk fleksibiliti format Google Sheet lama & baharu)
         function formatKeYYYYMMDD(tarikhInput) {
             if (!tarikhInput) return '';
             let tStr = tarikhInput.toString().trim();
             
-            // Jika dah sedia ada format YYYY-MM-DD
+            // Semakan format standard ISO (YYYY-MM-DD)
             if (/^\d{4}-\d{2}-\d{2}/.test(tStr)) {
                 return tStr.substring(0, 10);
             }
 
-            // Jika format seperti Google Form lama/baru (cth: 6/10/2026 atau 12/06/2026)
+            // Pemprosesan format Google Sheets dengan pembahagi serong '/'
             if (tStr.includes('/')) {
                 let pecahan = tStr.split(' ')[0].split('/');
                 if (pecahan.length === 3) {
-                    // Kenalpasti jika pecahan pertama ialah tahun atau hari/bulan
                     let p1 = pecahan[0];
                     let p2 = pecahan[1];
                     let p3 = pecahan[2];
@@ -251,8 +250,7 @@
                     if (p1.length === 4) { // YYYY/MM/DD
                         return `${p1}-${p2.padStart(2, '0')}-${p3.padStart(2, '0')}`;
                     } else { 
-                        // Kebanyakan Google Form format MY/UK (DD/MM/YYYY) atau US (MM/DD/YYYY)
-                        // Kita cuba buat andaian parsing yang selamat menggunakan objek Date bawaan browser
+                        // Menterjemah format DD/MM/YYYY atau MM/DD/YYYY menggunakan sistem browser standard
                         let d = new Date(tStr);
                         if (!isNaN(d.getTime())) {
                             let yyyy = d.getFullYear();
@@ -260,14 +258,13 @@
                             let dd = String(d.getDate()).padStart(2, '0');
                             return `${yyyy}-${mm}-${dd}`;
                         }
-                        
-                        // Fallback manual sekiranya tersangkut: anggap sebagai DD-MM-YYYY
+                        // Fallback jika pelayar web gagal membaca objek tarikh
                         return `${p3}-${p2.padStart(2, '0')}-${p1.padStart(2, '0')}`;
                     }
                 }
             }
             
-            // Cubaan terakhir menggunakan Date parse standard
+            // Cubaan menterjemah teks raw menggunakan sistem timestamp msa
             let timestamp = Date.parse(tStr);
             if (!isNaN(timestamp)) {
                 let d = new Date(timestamp);
@@ -277,6 +274,7 @@
             return '';
         }
 
+        // Membina Pilihan Dropdown bagi Triple Filters
         function binaElemenPenapis() {
             const selectGuru = document.getElementById('selectGuruIndividu');
             const selectTahun = document.getElementById('selectTahunIndividu');
@@ -291,7 +289,8 @@
                 const namaBersih = item['NAMA GURU'] || item['Nama Guru'] || item.nama || '';
                 if(namaBersih.trim()) senaraiGuru.add(namaBersih.trim());
 
-                const tarikhFormat = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN'] || item['Timestamp']);
+                // Menggunakan sandaran kolum TARIKH yang sepadan dengan paparan terkini anda
+                const tarikhFormat = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
                 if(tarikhFormat) {
                     const tahun = tarikhFormat.split('-')[0];
                     if(tahun) senaraiTahun.add(tahun);
@@ -323,6 +322,7 @@
             aplikasiFilter();
         }
 
+        // Fungsi Penapis Kalendar Utama (Kini Membaca Lajur 'TARIKH')
         function aplikasiFilter() {
             const fTarikh = document.getElementById('filterTarikh').value;
             const badge = document.getElementById('badgeHariIni');
@@ -337,7 +337,8 @@
             }
 
             const dataDitapis = dataMentah.filter(item => {
-                const tarikhItemClean = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                // Diperbaiki untuk membaca item['TARIKH'] mengikut penetapan lajur baru sheet anda
+                const tarikhItemClean = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
                 return fTarikh === "" || tarikhItemClean === fTarikh;
             });
 
@@ -350,6 +351,7 @@
             aplikasiFilter();
         }
 
+        // Pengurusan Render Paparan Data & Grafik Dashboard
         function kemaskiniDashboard(data) {
             document.getElementById('statTotal').textContent = data.length;
             
@@ -373,14 +375,14 @@
                 const guru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
                 
                 const hari = item.hari || item['HARI'] || '';
-                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
                 kiraGuru[guru] = (kiraGuru[guru] || 0) + 1;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 transition duration-150";
-                // REKABENTUK RINGKAS: Menggabungkan Hari & Tarikh, serta Urusan & Catatan
+                // Reka bentuk ringkas menyatukan Hari & Tarikh serta Urusan & Catatan
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-900">${guru}</td>
                     <td class="px-6 py-4 text-slate-600 font-medium">${hari} (${tarikhBersih})</td>
@@ -401,6 +403,7 @@
             binaGrafik(kiraUrusan);
         }
 
+        // Logik Penapis Bersilang Triple Filters (Nama + Bulan + Tahun)
         function tapisRekodGuruIndividu() {
             const namaTerpilih = document.getElementById('selectGuruIndividu').value;
             const bulanTerpilih = document.getElementById('selectBulanIndividu').value;
@@ -409,7 +412,7 @@
             
             const dataDitapis = dataMentah.filter(item => {
                 const namaItem = (item['NAMA GURU'] || item['Nama Guru'] || item.nama || '').trim();
-                const tarikhItem = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                const tarikhItem = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
                 
                 let padanNama = true;
                 let padanBulan = true;
@@ -443,7 +446,7 @@
                 const catatan = item.catatan || item['CATATAN'] || item['CATATAN / SEBAB'] || '-';
                 const namaGuru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
                 const hari = item.hari || item['HARI'] || '';
-                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH KETIADAAN']);
+                const tarikhBersih = formatKeYYYYMMDD(item.tarikh || item['TARIKH'] || item['TARIKH KETIADAAN']);
                 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
 
@@ -464,6 +467,7 @@
             document.getElementById('statGuruSebab').textContent = `${urusanTertinggi} (${kiraUrusan[urusanTertinggi]}x)`;
         }
 
+        // Grafik Termaju ChartJS
         function binaGrafik(dataUrusan) {
             const ctx = document.getElementById('urusanChart').getContext('2d');
             if (urusanChartInstance) { urusanChartInstance.destroy(); }
@@ -495,6 +499,7 @@
 
         function resetChart() { if (urusanChartInstance) { urusanChartInstance.destroy(); } }
 
+        // Sistem Navigasi Aplikasi
         function tukarPage(page) {
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');

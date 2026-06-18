@@ -6,7 +6,7 @@
     <title>Sistem Analisis Keberadaan Guru</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -229,36 +229,35 @@
             }
         }
 
-        // AMBIL TEKS TARIKH MENTAH (Kebal daripada sebarang isu zon masa)
+        // FUNGSI UTAMA: Potong dan ambil tarikh pendek sahaja (Mengatasi masalah teks panjang Singapore Time)
         function ambilTeksTarikhAsal(item) {
             let t = item['TARIKH'] || item['TARIKH KETIADAAN'] || item.tarikh || '';
             let tStr = t.toString().trim();
             
-            // Jika format string ISO panjang (Cth: 2026-06-15T16:00:00.000Z)
+            // Kes 1: Jika mengandungi format ISO (Cth: 2026-06-15T16:00:00.000Z)
             if (/^\d{4}-\d{2}-\d{2}/.test(tStr)) {
-                let bahagian = tStr.substring(0, 10).split('-'); // Ambil YYYY-MM-DD
-                return `${parseInt(bahagian[2])}/${parseInt(bahagian[1])}/${bahagian[0]}`; // Tukar jadi D/M/YYYY
+                let bahagian = tStr.substring(0, 10).split('-'); 
+                return `${parseInt(bahagian[2])}/${parseInt(bahagian[1])}/${bahagian[0]}`; 
             }
             
-            // Jika format string serong pendek (Cth: 15/6/2026)
+            // Kes 2: Jika ada ruang teks panjang (Cth: "Mon Jun 15 2026 00:00:00 GMT+0800 (Singapore Standard Time)")
+            // Kita cuba menterjemah objek Date secara selamat
+            if (tStr.includes('(') || tStr.includes('GMT')) {
+                let d = new Date(tStr);
+                if (!isNaN(d.getTime())) {
+                    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                }
+            }
+
+            // Kes 3: Jika sudah sedia pendek dengan tanda '/' (Cth: 15/6/2026)
             if (tStr.includes('/')) {
                 let rawDate = tStr.split(' ')[0]; 
                 let pecahan = rawDate.split('/');
                 if(pecahan.length === 3) {
-                    return `${parseInt(pecahan[0])}/${parseInt(pecahan[1])}/${pecahan[2]}`; // Pastikan format D/M/YYYY bersih
+                    return `${parseInt(pecahan[0])}/${parseInt(pecahan[1])}/${pecahan[2]}`;
                 }
             }
             return tStr;
-        }
-
-        // FORMAT KAN INPUT DATE DARI KALENDAR HTML KEPADA D/M/YYYY SECARA RAW
-        function tukarInputKeFormatSheet(inputTarikh) {
-            if(!inputTarikh) return '';
-            let pecahan = inputTarikh.split('-'); // [YYYY, MM, DD]
-            if(pecahan.length === 3) {
-                return `${parseInt(pecahan[2])}/${parseInt(pecahan[1])}/${pecVendor = pecahan[0]}`;
-            }
-            return '';
         }
 
         function binaElemenPenapis() {
@@ -307,6 +306,7 @@
             aplikasiFilter();
         }
 
+        // FUNGSI AUTO REFRESH: Memadankan tarikh pendek kalendar dengan tarikh pendek sistem secara dinamik
         function aplikasiFilter() {
             const fTarikhInput = document.getElementById('filterTarikh').value;
             const badge = document.getElementById('badgeHariIni');
@@ -320,7 +320,7 @@
                 badge.classList.add('hidden');
             }
 
-            // Contoh tukar kalendar HTML: "2026-06-15" -> "15/6/2026"
+            // Tukar format Kalendar HTML "2026-06-15" kepada format pendek padanan "15/6/2026"
             let sasaranTeksFormat = '';
             if(fTarikhInput) {
                 let p = fTarikhInput.split('-');
@@ -351,7 +351,7 @@
             tBody.innerHTML = '';
 
             if (data.length === 0) {
-                tBody.innerHTML = `<tr><td colspan="3" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada rekod dikesan untuk tarikh ini.</td></tr>`;
+                tBody.innerHTML = `<tr><td colspan="3" class="text-center py-12 text-slate-400 font-medium bg-slate-50/50">Tiada rekod ketiadaan dikesan untuk tarikh ini.</td></tr>`;
                 resetChart();
                 document.getElementById('statUrusan').textContent = "Tiada Data";
                 document.getElementById('statGuru').textContent = "Tiada Data";
@@ -364,7 +364,7 @@
                 const guru = item['NAMA GURU'] || item['Nama Guru'] || item.nama || 'TIADA NAMA';
                 
                 const hari = item.hari || item['HARI'] || '';
-                const tarikhBersih = ambilTeksTarikhAsal(item);
+                const tarikhBersih = ambilTeksTarikhAsal(item); // Tarikh keluar bersih pendek (cth: 15/6/2026)
 
                 kiraUrusan[urusan] = (kiraUrusan[urusan] || 0) + 1;
                 kiraGuru[guru] = (kiraGuru[guru] || 0) + 1;
@@ -489,7 +489,7 @@
             const pDashboard = document.getElementById('pageDashboard');
             const pRekod = document.getElementById('pageRekodGuru');
             const btnDashboard = document.getElementById('btnNavDashboard');
-            const btnRekod = document.getElementById('btnNavRekod');
+            const btnNavRekod = document.getElementById('btnNavRekod');
             const pTitle = document.getElementById('pageTitle');
             const pSubtitle = document.getElementById('pageSubtitle');
 
@@ -500,7 +500,7 @@
                 pSubtitle.textContent = "Memantau dan menganalisis statistik ketiadaan guru secara masa nyata.";
                 
                 btnDashboard.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl bg-indigo-600 text-white font-medium transition duration-200 shadow-sm cursor-pointer";
-                btnRekod.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition duration-200 cursor-pointer";
+                btnNavRekod.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition duration-200 cursor-pointer";
                 aplikasiFilter();
             } else if (page === 'rekod') {
                 pDashboard.classList.add('hidden');
@@ -509,7 +509,7 @@
                 pSubtitle.textContent = "Semak sejarah ketidakhadiran merentas bulan dan penunjuk tahunan.";
                 
                 btnDashboard.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition duration-200 cursor-pointer";
-                btnRekod.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl bg-indigo-600 text-white font-medium transition duration-200 shadow-sm cursor-pointer";
+                btnNavRekod.className = "w-full text-left flex items-center gap-3 py-3 px-4 rounded-xl bg-indigo-600 text-white font-medium transition duration-200 shadow-sm cursor-pointer";
                 tapisRekodGuruIndividu();
             }
         }
